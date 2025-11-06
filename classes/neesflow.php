@@ -84,6 +84,10 @@ class neesflow {
             $mdluser->lastname = $govlastname;
         }
 
+        $mdluser->alternatename = $userinfo->alternatename;
+        $mdluser->phone1 = $userinfo->phone1;
+
+
         // Updating mdl user.
         $DB->update_record('user', $mdluser);
 
