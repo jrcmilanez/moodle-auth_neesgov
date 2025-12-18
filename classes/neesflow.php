@@ -67,10 +67,12 @@ class neesflow {
         if ($mdluser->auth != 'neesgov') {// Change user auth type to neesgov.
             $this->backtoauthmethod = $mdluser->auth;
             $mdluser->auth = 'neesgov';
+            $updateflag = true;
         }
 
         if ($userinfo->email != $mdluser->email) { // User\'s email update.
             $mdluser->email = $userinfo->email;
+            $updateflag = true;
         }
 
         // Updating first and last name gov.br.
@@ -79,17 +81,27 @@ class neesflow {
 
         if ($mdluser->firstname != $govfirstname) {
             $mdluser->firstname = $govfirstname;
+            $updateflag = true;
         }
         if ($mdluser->lastname != $govlastname) {
             $mdluser->lastname = $govlastname;
+            $updateflag = true;
         }
 
-        $mdluser->alternatename = $userinfo->alternatename;
-        $mdluser->phone1 = $userinfo->phone1;
+        if ($mdluser->alternatename != $userinfo->alternatename) {
+            $mdluser->alternatename = $userinfo->alternatename;
+            $updateflag = true;
+        }
 
+        if ($mdluser->phone1 != $userinfo->phone1) {
+            $mdluser->phone1 = $userinfo->phone1;
+            $updateflag = true;
+        }
 
-        // Updating mdl user.
-        $DB->update_record('user', $mdluser);
+        if ($updateflag) {
+            // Updating mdl user.
+            $DB->update_record('user', $mdluser);
+        }
 
         $user = authenticate_user_login($mdluser->username, $mdluser->password, true);
         if (!empty($user)) {
@@ -147,8 +159,13 @@ class neesflow {
         $this->handlelogin($userinfo);
 
         if ($authtypechange) { // If this conf is true, change auth type to previous after login with neesgov.
-            $USER->auth = $this->backtoauthmethod;
-            $DB->update_record('user', $USER); // Force manual auth change!
+            if (!empty($this->backtoauthmethod)
+                &&
+                $this->backtoauthmethod != $USER->auth
+            ) {
+                $USER->auth = $this->backtoauthmethod;
+                $DB->update_record('user', $USER);
+            }
         }
 
         // Its all right and user is redirected to dashboard Moodle.

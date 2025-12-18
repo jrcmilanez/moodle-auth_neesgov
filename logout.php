@@ -28,8 +28,6 @@ require($CFG->dirroot . '/auth/neesgov/classes/connect.php');
 
 $pass = optional_param('pass', 0, PARAM_INT);
 
-require_login();
-
 $PAGE->set_url('/auth/neesgov/logout.php');
 $PAGE->set_context(context_system::instance());
 

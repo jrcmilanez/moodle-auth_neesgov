@@ -66,4 +66,9 @@ if ($ADMIN->fulltree) {
         get_string('auth_type_change', 'auth_neesgov'),
         get_string('auth_type_change_desc', 'auth_neesgov'),
         1));
+
+    $settings->add(new admin_setting_configcheckbox('auth_neesgov/create_new_user',
+        get_string('create_new_user', 'auth_neesgov'),
+        get_string('create_new_user_desc', 'auth_neesgov'),
+        1));
 }
