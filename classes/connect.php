@@ -74,6 +74,7 @@ class connect {
             'POST_LOGOUT_REDIRECT_URI' => get_config('auth_neesgov', 'post_logout_uri'),
             'CLIENT_ID' => get_config('auth_neesgov', 'client_id'),
             'CLIENT_SECRET' => get_config('auth_neesgov', 'client_secret'),
+            'CREATE_NEW_USER' => get_config('auth_neesgov', 'create_new_user'),
         ];
 
     }
@@ -106,6 +107,9 @@ class connect {
                 'email' => $oidc->requestUserInfo('email'),
                 'name' => $oidc->requestUserInfo('name'),
                 'picture' => $oidc->requestUserInfo('picture'),
+                'accesstoken' => $oidc->getAccessToken(),
+                'alternatename' => $oidc->requestUserInfo('social_name'),
+                'phone1' => $oidc->requestUserInfo('phone_number'),
                 'idtoken' => $oidc->getIdToken(),
                 'authcode' => $_REQUEST['code'],
                 'expiry' => $oidc->getVerifiedClaims('exp'),
@@ -126,15 +130,46 @@ class connect {
     private function manageusercodes() {
         global $DB, $CFG;
 
-        $mdluserexists = $DB->get_record('user', ['username' => $this->userinfo->id], 'id');
+        require_once($CFG->dirroot . '/user/lib.php');
+
+        $env = self::get_config_vars();
+
+        $mdluserexists = $DB->get_record(
+            'user',
+            [
+                'username' => $this->userinfo->id,
+                'deleted' => 0,
+            ], 'id');
 
         if (!$mdluserexists) {
-            // Neesgov logout because user is login in gov.br!
-            redirect(
-                $CFG->wwwroot . '/auth/neesgov/logout.php?pass=1',
-                'Usuário não cadastrado no Moodle',
-                3,
-                \core\output\notification::NOTIFY_ERROR);
+            if ($env['CREATE_NEW_USER']) { // Create a new user with neesgov auth .
+
+                $govfirstname = strtok($this->userinfo->name, " ");
+                $govlastname = strtok(null);
+
+                $usercreatobject = (object)[
+                    'username' => $this->userinfo->id,
+                    'email' => $this->userinfo->email,
+                    'firstname' => $govfirstname,
+                    'lastname' => $govlastname,
+                    'auth' => 'neesgov',
+                    'alternatename' => $this->userinfo->alternatename,
+                    'phone1' => $this->userinfo->phone1 ?? '',
+                    'mnethostid' => 1,
+                    'confirmed' => 1,
+                    'country' => 'BR',
+                ];
+                $idu = user_create_user($usercreatobject, false);
+                $mdluserexists = (object) ['id' => $idu];
+            } else {
+                // Neesgov logout because user is login in gov.br!
+                redirect(
+                    $CFG->wwwroot . '/auth/neesgov/logout.php?pass=1',
+                    get_string('user_not_registred', 'auth_neesgov'),
+                    3,
+                    \core\output\notification::NOTIFY_ERROR);
+            }
+
         }
 
         $usertokenexists = $DB->get_record(self::TOKEN_TABLE_NAME, ['userid' => $mdluserexists->id], 'id');

@@ -1,5 +1,3 @@
-⚠️Waiting for a new client ID for testing new improvements
-
 Log in to Moodle using gov br.
 =========================================
 🇧🇷
