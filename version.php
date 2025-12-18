@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version    = 2023020608;
-$plugin->release   = '1.2.3.1';
+$plugin->release   = '1.2.4';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->requires   = 2022041903;
 $plugin->component  = 'auth_neesgov';
