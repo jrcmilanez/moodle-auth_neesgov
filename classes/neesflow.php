@@ -96,7 +96,7 @@ class neesflow {
             $updateflag = true;
         }
 
-        if ($mdluser->phone1 != $userinfo->phone1) {
+        if (($userinfo->phone1 != "") && ($mdluser->phone1 != $userinfo->phone1)) {
             $mdluser->phone1 = $userinfo->phone1;
             $updateflag = true;
         }
